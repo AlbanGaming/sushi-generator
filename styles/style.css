@@ -1,0 +1,765 @@
+/* ================================================================
+   SUSHI BUILDER — style.css
+   ================================================================
+   STRUCTURE DU FICHIER :
+   1. Variables CSS (couleurs, polices)
+   2. Reset & base
+   3. Header
+   4. Navigation / Onglets
+   5. Grilles de cartes sushi
+   6. Barre de panier (sticky bas de page)
+   7. Panel "Liste de courses"
+   8. Panel "Recettes"
+   9. États vides (empty state)
+   10. Responsive (mobile)
+   ================================================================ */
+
+
+/* ================================================================
+   1. VARIABLES CSS
+   Les variables commencent toujours par "--"
+   On les définit dans :root pour qu'elles soient accessibles partout
+   Utilisation : color: var(--red);
+   ================================================================ */
+:root {
+  --ink:        #1a1008;   /* Couleur du texte principal (quasi-noir chaud) */
+  --paper:      #f7f2ea;   /* Fond de page (blanc cassé, ton papier) */
+  --red:        #c0392b;   /* Accent rouge (sélection, prix) */
+  --red-soft:   #e8c4be;   /* Rouge pastel (hover bouton minus) */
+  --gold:       #c9973a;   /* Or (titres de section, déco) */
+  --gold-light: #f0ddb0;   /* Or clair (hover onglets) */
+  --sage:       #7a9e7e;   /* Vert sauge (prix, détails) */
+  --sage-light: #d4e8d6;   /* Vert clair (fond astuce recette) */
+  --border:     #d4c9b0;   /* Couleur des bordures */
+  --shadow:     rgba(26,16,8,0.12); /* Ombre portée */
+}
+
+
+/* ================================================================
+   2. RESET & BASE
+   ================================================================ */
+
+/* On remet à zéro margin/padding sur tous les éléments,
+   et on change le modèle de boîte pour que padding/border
+   ne s'ajoutent PAS à la taille (plus intuitif) */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'DM Mono', monospace;
+  min-height: 100vh;
+
+  /* Deux dégradés en arrière-plan pour un effet ambiance subtil */
+  background-image:
+    radial-gradient(ellipse at 10% 20%, rgba(201,151,58,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 80%, rgba(192,57,43,0.06) 0%, transparent 50%);
+}
+
+
+/* ================================================================
+   3. HEADER
+   ================================================================ */
+
+header {
+  text-align: center;
+  padding: 60px 20px 40px;
+  position: relative; /* nécessaire pour les pseudo-éléments ::before / ::after */
+}
+
+/* La ligne verticale dorée au-dessus du titre
+   ::before = contenu inséré AVANT l'élément (sans HTML) */
+header::before {
+  content: '';          /* obligatoire pour afficher un pseudo-élément */
+  display: block;
+  width: 1px;
+  height: 40px;
+  background: var(--gold);
+  margin: 0 auto 20px; /* centré horizontalement */
+}
+
+/* Petit texte japonais en haut */
+.header-jp {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 13px;
+  letter-spacing: 0.4em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+/* Titre principal */
+header h1 {
+  font-family: 'Noto Serif JP', serif;
+  /* clamp(min, préféré, max) = taille fluide selon la largeur d'écran */
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* Le mot "Builder" en rouge gras */
+header h1 span {
+  color: var(--red);
+  font-weight: 700;
+}
+
+.subtitle {
+  margin-top: 14px;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: #8a7a5a;
+  text-transform: uppercase;
+}
+
+/* Filigrane décoratif "寿司" en arrière-plan (position fixe) */
+body::after {
+  content: '寿司';
+  position: fixed;
+  right: -30px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 120px;
+  color: rgba(201,151,58,0.04);
+  pointer-events: none; /* ne bloque pas les clics */
+  z-index: 0;
+  white-space: nowrap;
+}
+
+
+/* ================================================================
+   4. NAVIGATION / ONGLETS
+   ================================================================ */
+
+.tabs {
+  display: flex;            /* les onglets côte à côte */
+  justify-content: center;
+  margin: 40px auto 0;
+  max-width: 600px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;         /* arrondi visible sur les enfants */
+}
+
+.tab {
+  flex: 1;                  /* chaque onglet prend la même largeur */
+  padding: 14px 20px;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border);
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #8a7a5a;
+  transition: all 0.2s;    /* animation douce sur les changements */
+}
+
+.tab:last-child {
+  border-right: none;       /* pas de bordure sur le dernier onglet */
+}
+
+/* Onglet actif (ajouté/retiré par le JS) */
+.tab.active {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* Survol uniquement sur les onglets non-actifs */
+.tab:not(.active):hover {
+  background: var(--gold-light);
+}
+
+
+/* ================================================================
+   5. PANNEAUX (affichage/masquage)
+   ================================================================ */
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px 80px; /* 80px en bas pour ne pas être caché par la cart-bar */
+}
+
+/* Tous les panels sont cachés par défaut */
+.panel {
+  display: none;
+}
+
+/* Seul le panel avec la classe "active" est visible */
+.panel.active {
+  display: block;
+}
+
+
+/* ================================================================
+   6. CARTES SUSHI (panel Menu)
+   ================================================================ */
+
+.section-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 11px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+
+  /* Ligne qui s'étend à droite du texte */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.category-block {
+  margin-bottom: 44px;
+}
+
+/* Grille responsive : colonnes de 280px min, s'adapte à la largeur */
+.sushi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* Une carte sushi */
+.sushi-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Barre colorée à gauche (invisible par défaut) */
+.sushi-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: transparent;
+  transition: background 0.2s;
+}
+
+.sushi-card:hover {
+  border-color: var(--gold);
+  box-shadow: 0 4px 16px var(--shadow);
+}
+
+/* Quand qty > 0 : la carte est "sélectionnée" (classe ajoutée par le JS) */
+.sushi-card.selected {
+  border-color: var(--red);
+}
+.sushi-card.selected::before {
+  background: var(--red);
+}
+
+.sushi-emoji {
+  font-size: 2rem;
+  flex-shrink: 0; /* ne se réduit pas si l'espace manque */
+  line-height: 1;
+}
+
+.sushi-info {
+  flex: 1;
+  min-width: 0; /* fix pour que le texte soit tronqué correctement */
+}
+
+.sushi-name {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.sushi-desc {
+  font-size: 10px;
+  color: #8a7a5a;
+  letter-spacing: 0.05em;
+  line-height: 1.5;
+}
+
+.sushi-price {
+  font-size: 10px;
+  color: var(--sage);
+  margin-top: 4px;
+  letter-spacing: 0.1em;
+}
+
+/* Contrôle quantité (− 0 +) */
+.qty-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.qty-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--ink);
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1px;
+  font-family: 'DM Mono', monospace;
+}
+
+.qty-btn:hover {
+  background: var(--gold-light);
+  border-color: var(--gold);
+}
+
+/* Hover spécial pour le bouton "−" */
+.qty-btn.minus:hover {
+  background: var(--red-soft);
+  border-color: var(--red);
+}
+
+.qty-num {
+  font-size: 15px;
+  font-weight: 500;
+  min-width: 20px;
+  text-align: center;
+  font-family: 'Shippori Mincho', serif;
+}
+
+
+/* ================================================================
+   7. BARRE DE PANIER (fixe en bas)
+   ================================================================ */
+
+.cart-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 100;
+
+  /* Cachée en dessous de l'écran par défaut */
+  transform: translateY(100%);
+  /* Animation "spring" au slide-up */
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Classe ajoutée par le JS quand qty > 0 */
+.cart-bar.visible {
+  transform: translateY(0);
+}
+
+.cart-summary {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #c9b898;
+}
+
+.cart-total {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--gold);
+}
+
+.cart-cta {
+  background: var(--red);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 1px;
+  transition: background 0.2s;
+}
+
+.cart-cta:hover {
+  background: #a93226;
+}
+
+
+/* ================================================================
+   8. PANEL "LISTE DE COURSES"
+   ================================================================ */
+
+/* Layout 2 colonnes : ingrédients | résumé commande */
+.list-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 32px;
+  align-items: start;
+}
+
+/* Tableau des ingrédients */
+.ingredient-table {
+  width: 100%;
+  border-collapse: collapse; /* fusionne les bordures des cellules */
+}
+
+.ingredient-table th {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.ingredient-table td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(212,201,176,0.4);
+  font-size: 13px;
+  vertical-align: top;
+}
+
+.ingredient-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Ligne de catégorie (ex: "Poisson & Protéines") */
+.ingredient-table .cat-row td {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #8a7a5a;
+  background: #f0ebe0;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Cellule prix (alignée à droite) */
+.price-cell {
+  text-align: right;
+  color: var(--sage);
+  font-family: 'Shippori Mincho', serif;
+}
+
+/* Ligne total en gras */
+.total-row td {
+  font-weight: 700;
+  border-top: 2px solid var(--ink) !important;
+  padding-top: 14px;
+  font-family: 'Noto Serif JP', serif;
+}
+
+/* Encart résumé de commande (colonne droite) */
+.order-summary {
+  background: white;
+  border: 1px solid var(--border);
+  padding: 24px;
+  position: sticky; /* reste visible en scrollant */
+  top: 20px;
+}
+
+.order-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(212,201,176,0.4);
+  font-size: 12px;
+}
+
+.order-item:last-of-type {
+  border-bottom: none;
+}
+
+.order-item-name {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 13px;
+}
+
+.order-item-qty {
+  color: var(--red);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+/* Ligne grand total */
+.order-grand-total {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 2px solid var(--ink);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.order-grand-total span:first-child {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.order-grand-total span:last-child {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 26px;
+  font-weight: 300;
+  color: var(--gold);
+}
+
+/* Bouton imprimer */
+.print-btn {
+  display: block;
+  width: fit-content;
+  margin: 24px auto 0;
+  background: transparent;
+  border: 1px solid var(--ink);
+  padding: 12px 28px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--ink);
+  transition: all 0.2s;
+}
+
+.print-btn:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+
+/* ================================================================
+   9. PANEL "RECETTES"
+   ================================================================ */
+
+.recipe-list {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Carte recette (accordéon) */
+.recipe-card {
+  background: white;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+/* En-tête cliquable */
+.recipe-header {
+  padding: 24px 28px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none; /* évite la sélection de texte au clic */
+  transition: background 0.15s;
+}
+
+.recipe-header:hover {
+  background: #faf6ef;
+}
+
+.recipe-emoji {
+  font-size: 2.2rem;
+}
+
+.recipe-title-block {
+  flex: 1;
+}
+
+.recipe-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.recipe-meta {
+  font-size: 10px;
+  color: #8a7a5a;
+  letter-spacing: 0.1em;
+}
+
+/* Le "+" qui tourne en "×" quand ouvert */
+.recipe-toggle {
+  font-size: 20px;
+  color: var(--gold);
+  transition: transform 0.2s;
+}
+
+.recipe-card.open .recipe-toggle {
+  transform: rotate(45deg); /* + → × */
+}
+
+/* Corps de la recette (caché par défaut) */
+.recipe-body {
+  display: none;
+  padding: 28px;
+}
+
+/* Quand la carte est ouverte */
+.recipe-card.open .recipe-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.recipe-section-title {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Liste d'ingrédients de recette */
+.recipe-ingredients li {
+  list-style: none;
+  font-size: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(212,201,176,0.3);
+  display: flex;
+  justify-content: space-between;
+}
+
+.recipe-ingredients li:last-child {
+  border-bottom: none;
+}
+
+.ing-qty {
+  color: var(--red);
+  font-family: 'Shippori Mincho', serif;
+}
+
+/* Étapes numérotées avec compteur CSS personnalisé */
+.recipe-steps ol {
+  list-style: none;
+  counter-reset: step; /* initialise le compteur à 0 */
+}
+
+.recipe-steps li {
+  counter-increment: step; /* +1 à chaque li */
+  font-size: 12px;
+  line-height: 1.7;
+  padding: 10px 0 10px 36px;
+  border-bottom: 1px solid rgba(212,201,176,0.3);
+  position: relative;
+}
+
+.recipe-steps li:last-child {
+  border-bottom: none;
+}
+
+/* Le numéro d'étape généré par CSS */
+.recipe-steps li::before {
+  content: counter(step, decimal-leading-zero); /* 01, 02, 03... */
+  position: absolute;
+  left: 0;
+  font-family: 'Shippori Mincho', serif;
+  color: var(--gold);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+/* Encart astuce (fond vert) */
+.recipe-tip {
+  margin-top: 16px;
+  background: var(--sage-light);
+  padding: 14px 16px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #3a5c3e;
+  letter-spacing: 0.02em;
+  border-left: 3px solid var(--sage);
+  grid-column: 1 / -1; /* s'étend sur toutes les colonnes de la grille */
+}
+
+
+/* ================================================================
+   10. ÉTAT VIDE (quand rien n'est sélectionné)
+   ================================================================ */
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #8a7a5a;
+}
+
+.empty-state .big {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}
+
+.empty-state p {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+
+
+/* ================================================================
+   11. RESPONSIVE (mobile ≤ 700px)
+   ================================================================ */
+
+@media (max-width: 700px) {
+  /* La liste de courses passe en colonne unique */
+  .list-layout {
+    grid-template-columns: 1fr;
+  }
+
+  /* Les recettes aussi */
+  .recipe-card.open .recipe-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ================================================================
+   12. IMPRESSION (@print)
+   Masque les éléments inutiles à l'impression
+   ================================================================ */
+
+@media print {
+  .tabs,
+  .cart-bar,
+  .print-btn {
+    display: none !important;
+  }
+
+  .panel {
+    display: block !important;
+  }
+
+  .recipe-card.open .recipe-body,
+  .recipe-body {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+}
