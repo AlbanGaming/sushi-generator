@@ -163,6 +163,38 @@ const SUSHI = {
       recipeKey: 'temaki',
     },
   ],
+  condiment: [
+    {
+      id: 'sauce_soja_add',
+      name: 'Sauce Soja',
+      emoji : '🌯',
+      desc: '',
+      priceUnit: 2.50,
+      pieces: 1,
+      ingredients: ['sauce_soja'],
+      recipeKey: 'sauce_soja_recipe',
+    },
+    {
+      id: 'wasabi_add',
+      name: 'Wasabi',
+      emoji : '🌯',
+      desc: '',
+      priceUnit: 2.50,
+      pieces: 1,
+      ingredients: ['wasabi'],
+      recipeKey: 'wasabi_recipe',
+    },
+    {
+      id: 'gari_add',
+      name: 'Gari',
+      emoji : '🌯',
+      desc: '',
+      priceUnit: 2.50,
+      pieces: 1,
+      ingredients: ['gari'],
+      recipeKey: 'gari_recipe',
+    }
+  ]
 };
 
 
@@ -186,16 +218,16 @@ const INGREDIENTS = {
   sesame:        { name: 'Graines de sésame',               unit: 'g',        perPlate: 10,   priceKg: 8.00, cat: 'Épicerie sèche' },
   cream_cheese:  { name: 'Cream cheese (Philadelphia)',     unit: 'g',        perPlate: 40,   priceKg: 14.00, cat: 'Frais' },
   mayonnaise:    { name: 'Mayonnaise',                      unit: 'g',        perPlate: 20,   priceKg: 5.00, cat: 'Épicerie sèche' },
-  sauce_soja:    { name: 'Sauce soja',                      unit: 'fixe',     perPlate: 0,    priceUnit: 2.50, cat: 'Condiments' },
-  wasabi:        { name: 'Wasabi (tube)',                   unit: 'fixe',     perPlate: 0,    priceUnit: 2.50, cat: 'Condiments' },
-  gari:          { name: 'Gingembre mariné (gari)',         unit: 'fixe',     perPlate: 0,    priceUnit: 2.80, cat: 'Condiments' },
+  sauce_soja:    { name: 'Sauce soja',                      unit: 'cl',     perPlate: 3,    priceL: 10.0, cat: 'Condiments' },
+  wasabi:        { name: 'Wasabi (tube)',                   unit: 'g',     perPlate: 1,    priceKg: 60.0, cat: 'Condiments' },
+  gari:          { name: 'Gingembre mariné (gari)',         unit: 'g',     perPlate: 10,    priceKg: 9.0, cat: 'Condiments' },
 };
 
 /*
   ALWAYS : ingrédients toujours ajoutés à la liste
   (peu importe les sushis choisis)
 */
-const ALWAYS = ['sauce_soja', 'wasabi', 'gari'];
+const ALWAYS = [];
 
 
 /*
@@ -377,6 +409,7 @@ function renderMenu() {
     california: 'grid-california',
     nigiri:     'grid-nigiri',
     temaki:     'grid-temaki',
+    condiment: 'grid-condiment'
   };
 
   // On boucle sur chaque catégorie
@@ -587,6 +620,7 @@ function renderListe() {
     }
   }
 
+
   // Résumé de commande (colonne droite)
   let lignesCommande = '';
   let totalCommande = 0;
@@ -604,6 +638,7 @@ function renderListe() {
       </div>
     `;
   }
+
 
   conteneur.innerHTML = `
     <div class="list-layout">
@@ -638,10 +673,10 @@ function renderListe() {
         <div class="section-title">Ta commande</div>
         <div class="order-summary">
           ${lignesCommande}
-          <div class="order-grand-total">
+          <!--<div class="order-grand-total">
             <span>Total sushis</span>
             <span>~${totalCommande.toFixed(2).replace('.', ',')} €</span>
-          </div>
+          </div> -->
         </div>
       </div>
 

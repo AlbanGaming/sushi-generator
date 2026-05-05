@@ -746,20 +746,7 @@ body::after {
    ================================================================ */
 
 @media print {
-  .tabs,
-  .cart-bar,
-  .print-btn {
-    display: none !important;
-  }
-
-  .panel {
-    display: block !important;
-  }
-
-  .recipe-card.open .recipe-body,
-  .recipe-body {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
+  #panel-liste,
+  #liste-content,
+  #liste-content * { display: block; }
 }
